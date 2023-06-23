@@ -1,1 +1,99 @@
-{"version":"0.2.0","body":"function main(workbook: ExcelScript.Workbook) {\r\n\r\n  const revMappingSheetName = \"DORA\"; // name of the worksheet of the Reg and the column in the Main sheet\r\n\r\n  const revMapID = \"A1:A589\"; //The entire range of the Reg. Column 1\r\n\r\n  let allWorksheets = workbook.getWorksheets(); //for  main sheet\r\n\r\n  var revMapSheet = workbook.getWorksheet(revMappingSheetName);\r\n\r\n  var revMapIDCellValues = revMapSheet.getRange(revMapID).getValues();\r\n\r\n  // Iterate over all worksheets with a period in their name \r\n\r\n  for (let worksheets of allWorksheets) {\r\n\r\n    if (worksheets.getRange().getFormat().getHorizontalAlignment() && worksheets.getRange().getFormat().getHorizontalAlignment().toString() == \"General\") {\r\n\r\n        console.log(\"Moving to: \" + worksheets.getName() + \" **If there is not a statement below saying the reg was found, a typo exists in this worksheet for the Reg header.\");\r\n        // Find the row with the word to search for \r\n\r\n        let dataRange = worksheets.getUsedRange();\r\n\r\n        let headerRow = dataRange.getRow(0).getValues()[0];\r\n\r\n        let wordCol = headerRow.indexOf(revMappingSheetName);\r\n\r\n        if (wordCol !== -1) {\r\n\r\n          // Iterate over the cells in the column with the word to search for \r\n          console.log(\"!!! Found \" + revMappingSheetName + \" in \" + worksheets.getName());\r\n\r\n          let columnRange = worksheets.getRangeByIndexes(1, wordCol, dataRange.getRowCount() - 1, 1);\r\n\r\n          let columnValues = columnRange.getValues();\r\n\r\n          for (let j = 0; j < columnValues.length; j++) {\r\n\r\n            let cellValue = columnValues[j][0].toString();\r\n\r\n            if (cellValue) { // skip empty cells \r\n\r\n              let items = cellValue.split(\"\\n\"); // split the cell contents into a list based on line feed \r\n\r\n              for (let k = 0; k < items.length; k++) {\r\n\r\n                let item = items[k].trim();\r\n\r\n                if (item !== \"No Mapping\") { // check if the item is not equal to the \"no mapping\" text \r\n\r\n                  revMapIDCellValues.forEach((rowItem, rowIndex) => {\r\n\r\n                    let key = rowItem[0].toString().trim();\r\n\r\n                    let tcrIDCol = headerRow.indexOf(\"TCR ID\");\r\n\r\n                    if (key == item && key !== \"\" && tcrIDCol !== -1) {\r\n\r\n                        let tcrIDCell = worksheets.getCell(j + 1, tcrIDCol).getValue();\r\n\r\n                        let creditCell = worksheets.getCell(j + 1, wordCol + 1).getValue().toString().split(\"\\n\")[k];\r\n\r\n                        let targetCell = revMapSheet.getCell(rowIndex, 2);\r\n\r\n                        let targetvalue = targetCell.getValue();\r\n\r\n                        let newValue = targetvalue + \"\\n\" + tcrIDCell + \" (\" + creditCell + \")\";\r\n\r\n                        targetCell.setValue(newValue);\r\n                      \r\n                    }\r\n\r\n                  });\r\n\r\n                }\r\n\r\n              }\r\n\r\n            }\r\n            else{\r\n              console.log(\"Cells in \" + worksheets.getName() + \" are missing mappings.\");\r\n            }\r\n\r\n          }\r\n\r\n        }\r\n    \r\n      }\r\n    \r\n  }\r\nconsole.log(\"Finished... Send Accolades to Bruce and Justin <3 <3\")\r\n}","description":"This script takes ","parameterInfo":"{\"originalParameterOrder\":[],\"parameterSchema\":{\"type\":\"object\",\"default\":{},\"x-ms-visibility\":\"internal\"},\"returnSchema\":{\"type\":\"object\",\"properties\":{}}}","apiInfo":"{\"variant\":\"synchronous\",\"variantVersion\":2}"}
+function main(workbook: ExcelScript.Workbook) {
+
+  const revMappingSheetName = "Israel"; // name of the worksheet of the Reg and the column in the Main sheet
+
+  let allWorksheets = workbook.getWorksheets(); //for  main sheet
+
+  var revMapSheet = workbook.getWorksheet(revMappingSheetName);
+
+  var revMapIDCellValues = revMapSheet.getUsedRange().getColumn(0).getValues();
+
+  // Iterate over all worksheets with a period in their name 
+
+  for (let worksheets of allWorksheets) {
+
+    if (worksheets.getRange().getFormat().getHorizontalAlignment() && worksheets.getRange().getFormat().getHorizontalAlignment().toString() == "General") {
+
+        console.log("Moving to: " + worksheets.getName() + " **If there is not a statement below saying the reg was found, a typo exists in this worksheet for the Reg header.");
+        // Find the row with the word to search for 
+
+        let dataRange = worksheets.getUsedRange();
+
+        let headerRow = dataRange.getRow(0).getValues()[0];
+
+        let wordCol = headerRow.indexOf(revMappingSheetName);
+
+        if (wordCol !== -1) {
+
+          // Iterate over the cells in the column with the word to search for 
+          console.log("!!! Found " + revMappingSheetName + " in " + worksheets.getName());
+
+          let columnRange = worksheets.getRangeByIndexes(1, wordCol, dataRange.getRowCount() - 1, 1);
+
+          let columnValues = columnRange.getValues();
+
+          for (let j = 0; j < columnValues.length; j++) {
+
+            let cellValue = columnValues[j][0].toString();
+
+            if (cellValue) { // skip empty cells 
+
+              let items = cellValue.split("\n"); // split the cell contents into a list based on line feed 
+
+              for (let k = 0; k < items.length; k++) {
+
+                let item = items[k].trim();
+
+                if (item !== "No Mapping") { // check if the item is not equal to the "no mapping" text 
+
+                  revMapIDCellValues.forEach((rowItem, rowIndex) => {
+
+                    let key = rowItem[0].toString().trim();
+
+                    let tcrIDCol = headerRow.indexOf("TCR ID");
+
+                    if (key == item && key !== "" && tcrIDCol !== -1) {
+
+                        let tcrIDCell = worksheets.getCell(j + 1, tcrIDCol).getValue();
+
+                        let creditCell = worksheets.getCell(j + 1, wordCol + 1).getValue().toString().split("\n")[k];
+
+                        let targetCell = revMapSheet.getCell(rowIndex, 2);
+
+                        let targetvalue = targetCell.getValue();
+
+                        let newValue = targetvalue + "\n" + tcrIDCell + " (" + creditCell + ")";
+
+                        targetCell.setValue(newValue);
+                      
+                    }
+
+                  });
+
+                }
+
+              }
+
+            }
+            else{
+              console.log("Cells in " + worksheets.getName() + " are missing mappings.");
+            }
+
+          }
+
+        }
+    
+      }
+    
+  }
+  let range = revMapSheet.getUsedRange().getColumn(2)
+  let values = range.getValues();
+  for (let i = 0; i < values.length; i++) {
+    for (let j = 0; j < values[i].length; j++) {
+      values[i][j] = values[i][j].toString().replace(/^\n+|\n+$/g, '');
+    }
+  }
+  range.setValues(values);
+  
+console.log("Finished... Send Accolades to Bruce and Justin <3 <3")
+}
